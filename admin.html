@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Prompt Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=DM+Sans:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--y:#ffe17c;--d:#171e19;--s:#b7c6c2;--g:#f4f4f5;--ok:#1f8a4c;--ko:#c0392b;color-scheme:light}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--y);background-image:radial-gradient(rgba(0,0,0,.1) 2px,transparent 2px);background-size:32px 32px;color:#000;font:500 16px/1.6 "DM Sans",system-ui,sans-serif;min-height:100vh}
+h1,h2,h3{font-family:"Bricolage Grotesque","Arial Black",sans-serif;font-weight:800;letter-spacing:-.04em;line-height:1.05;margin:0;text-transform:uppercase}
+header{background:#000;color:#fff;border-bottom:2px solid #000}
+.w{max-width:860px;margin:auto;padding:0 16px}
+.nav{display:flex;align-items:center;justify-content:space-between;height:68px;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;font:800 1.25rem "Bricolage Grotesque",sans-serif;letter-spacing:-.05em;color:#fff;text-decoration:none}
+.logo i{width:34px;height:34px;background:var(--y);color:#000;display:grid;place-items:center;font-style:normal}
+.logo small{font:700 .7rem "DM Sans",sans-serif;letter-spacing:.14em;background:var(--y);color:#000;padding:2px 8px}
+main{padding:36px 0 80px;display:grid;gap:28px}
+.card{background:#fff;border:2px solid #000;box-shadow:8px 8px 0 #000;padding:28px}
+.card h2{font-size:1.5rem;margin-bottom:6px}
+.card>p.sub{margin:0 0 20px;color:#444}
+label{display:block;font-weight:700;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;margin:16px 0 6px}
+input,textarea,select{width:100%;font:500 1rem "DM Sans",sans-serif;padding:12px 14px;border:2px solid #000;background:var(--g);color:#000;border-radius:0}
+input:focus,textarea:focus,select:focus{outline:3px solid var(--y);outline-offset:0;background:#fff}
+textarea{min-height:90px;resize:vertical}
+.hint{font-size:.82rem;color:#555;margin:6px 0 0}
+.hint a{color:#000}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border:2px solid #000;font:800 .9rem "Bricolage Grotesque",sans-serif;text-transform:uppercase;cursor:pointer;background:#000;color:#fff;box-shadow:4px 4px 0 #000;transition:transform .15s,box-shadow .15s;text-decoration:none}
+.btn:hover:not(:disabled){transform:translate(4px,4px);box-shadow:0 0 0 #000}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.y{background:var(--y);color:#000}.btn.w{background:#fff;color:#000}.btn.r{background:#fff;color:var(--ko);border-color:var(--ko);box-shadow:4px 4px 0 var(--ko)}
+.row{display:flex;gap:14px;flex-wrap:wrap;margin-top:22px;align-items:center}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.status{display:inline-flex;align-items:center;gap:8px;border:2px solid #000;padding:5px 14px;font-weight:700;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;border-radius:99px;background:var(--g)}
+.status::before{content:"";width:10px;height:10px;border-radius:50%;background:#999}
+.status.on{background:#e3f6ea}.status.on::before{background:var(--ok)}
+.msg{margin-top:16px;padding:12px 16px;border:2px solid #000;font-weight:700;display:none}
+.msg.show{display:block}.msg.ok{background:#e3f6ea}.msg.ko{background:#fde8e6}
+.rv{border:2px solid #000;padding:16px;margin-top:14px;background:var(--g);display:grid;gap:4px}
+.rv header{background:none;border:0;color:#000;display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.rv b{font-family:"Bricolage Grotesque",sans-serif}.rv p{margin:0;font-size:.92rem}
+.rv button{background:none;border:0;color:var(--ko);font-weight:700;cursor:pointer;text-decoration:underline;padding:0}
+.empty{color:#666;font-style:italic;margin-top:10px}
+.save{position:sticky;bottom:16px;background:#000;color:#fff;border:2px solid #000;box-shadow:8px 8px 0 rgba(0,0,0,.35);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.save span{font-weight:700}
+[hidden]{display:none!important}
+@media(max-width:640px){.g2{grid-template-columns:1fr}.card{padding:20px;box-shadow:5px 5px 0 #000}.btn{width:100%}}
+</style>
+</head>
+<body>
+<header><div class="w nav">
+<a class="logo" href="./"><i>▣</i>PROMPT VAULT <small>ADMIN</small></a>
+<button class="btn y" id="logout" hidden>Déconnexion</button>
+</div></header>
+
+<main class="w">
+
+<!-- Connexion -->
+<section class="card" id="login">
+<h2>Connexion admin</h2>
+<p class="sub">L'espace admin enregistre les réglages directement dans le dépôt GitHub du site. Il faut un token GitHub avec accès en écriture au dépôt.</p>
+<form id="loginForm">
+<label for="repo">Dépôt GitHub (propriétaire/nom)</label>
+<input id="repo" placeholder="ex. mon-compte/prompt-vault" required autocomplete="off" spellcheck="false">
+<label for="token">Token GitHub</label>
+<input id="token" type="password" placeholder="github_pat_…" required autocomplete="off" spellcheck="false">
+<p class="hint">Créez un <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">token « fine-grained »</a> limité à ce dépôt, avec la permission <b>Contents : Read and write</b>. Le token reste dans cet onglet et disparaît à sa fermeture ; il n'est jamais enregistré dans le site.</p>
+<div class="row"><button class="btn" type="submit">Se connecter</button></div>
+</form>
+<div class="msg" id="loginMsg"></div>
+</section>
+
+<div id="panel" hidden style="display:grid;gap:28px">
+
+<!-- Chariow -->
+<section class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+<h2>Compte Chariow</h2><span class="status" id="chStatus">Non lié</span>
+</div>
+<p class="sub">Liez votre boutique Chariow : tous les boutons d'achat du site redirigeront vers votre page de paiement.</p>
+<div class="g2">
+<div><label for="chStore">Lien de la boutique Chariow</label><input id="chStore" type="url" placeholder="https://…" spellcheck="false"></div>
+<div><label for="chCheckout">Lien de paiement du produit *</label><input id="chCheckout" type="url" placeholder="https://…" spellcheck="false"></div>
+</div>
+<p class="hint">Sur Chariow, ouvrez votre produit « Prompt Vault » et copiez son lien de partage / de paiement.</p>
+<div class="row">
+<button class="btn y" id="chLink" type="button">Lier le compte</button>
+<a class="btn w" id="chTest" target="_blank" rel="noopener" hidden>Tester le lien ↗</a>
+<button class="btn r" id="chUnlink" type="button" hidden>Délier</button>
+</div>
+<div class="msg" id="chMsg"></div>
+</section>
+
+<!-- Avis -->
+<section class="card">
+<h2>Avis clients</h2>
+<p class="sub">N'ajoutez que de vrais avis. La section reste cachée sur le site tant que la liste est vide.</p>
+<form id="rvForm">
+<div class="g2">
+<div><label for="rvName">Nom</label><input id="rvName" placeholder="Prénom N." required></div>
+<div class="g2" style="gap:0 12px">
+<div><label for="rvDate">Date</label><input id="rvDate" placeholder="Octobre 2026"></div>
+<div><label for="rvStars">Note</label><select id="rvStars"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></div>
+</div>
+</div>
+<label for="rvText">Avis</label><textarea id="rvText" required></textarea>
+<div class="row"><button class="btn w" type="submit">+ Ajouter l'avis</button></div>
+</form>
+<div id="rvList"></div>
+</section>
+
+<div class="save"><span id="saveState">Aucune modification</span><button class="btn y" id="save" disabled>Enregistrer et publier</button></div>
+<div class="msg" id="saveMsg"></div>
+</div>
+</main>
+
+<script>
+const API="https://api.github.com";
+const $=id=>document.getElementById(id);
+const EMPTY={chariow:{storeUrl:"",checkoutUrl:"",linkedAt:""},reviews:[]};
+let S={repo:"",token:"",sha:null,cfg:null,dirty:false};
+
+function store(kind,k,v){try{const s=kind==="l"?localStorage:sessionStorage;if(v===undefined)return s.getItem(k);v===null?s.removeItem(k):s.setItem(k,v)}catch(e){return null}}
+function msg(el,text,ok){el.textContent=text;el.className="msg show "+(ok?"ok":"ko")}
+function clearMsg(el){el.className="msg";el.textContent=""}
+function guessRepo(){const h=location.hostname;if(h.endsWith(".github.io")){const seg=location.pathname.split("/").filter(Boolean)[0];return h.split(".")[0]+"/"+(seg&&!seg.includes(".")?seg:h)}return""}
+const b64enc=s=>{const b=new TextEncoder().encode(s);let r="";b.forEach(c=>r+=String.fromCharCode(c));return btoa(r)};
+const b64dec=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g,"")),c=>c.charCodeAt(0)));
+const isHttps=u=>{try{return new URL(u).protocol==="https:"}catch(e){return false}};
+
+async function gh(path,opt={}){
+  const r=await fetch(API+path,{...opt,headers:{Accept:"application/vnd.github+json",Authorization:"Bearer "+S.token,"X-GitHub-Api-Version":"2022-11-28",...(opt.headers||{})}});
+  const body=r.status===204?null:await r.json().catch(()=>null);
+  if(!r.ok){const e=new Error((body&&body.message)||("HTTP "+r.status));e.status=r.status;throw e}
+  return body;
+}
+
+async function login(repo,token){
+  S.repo=repo.trim().replace(/^https:\/\/github\.com\//,"").replace(/\.git$/,"").replace(/\/$/,"");S.token=token.trim();
+  if(!/^[\w.-]+\/[\w.-]+$/.test(S.repo))throw new Error("Format du dépôt invalide (attendu : propriétaire/nom).");
+  const info=await gh("/repos/"+S.repo);
+  if(!info.permissions||!info.permissions.push)throw new Error("Ce token n'a pas l'accès en écriture à "+S.repo+".");
+  try{const f=await gh("/repos/"+S.repo+"/contents/config.json?ref="+encodeURIComponent(info.default_branch));S.sha=f.sha;S.cfg=JSON.parse(b64dec(f.content))}
+  catch(e){if(e.status!==404)throw e;S.sha=null;S.cfg=null}
+  S.branch=info.default_branch;
+  S.cfg=Object.assign(structuredClone(EMPTY),S.cfg||{});S.cfg.chariow=Object.assign({},EMPTY.chariow,S.cfg.chariow||{});
+  if(!Array.isArray(S.cfg.reviews))S.cfg.reviews=[];
+  store("s","pv_token",S.token);store("l","pv_repo",S.repo);
+  $("login").hidden=true;$("panel").hidden=false;$("logout").hidden=false;setDirty(false);render();
+}
+
+function setDirty(d){S.dirty=d;$("save").disabled=!d;$("saveState").textContent=d?"Modifications non enregistrées":"Tout est enregistré"}
+
+function render(){
+  const c=S.cfg.chariow,linked=isHttps(c.checkoutUrl);
+  $("chStore").value=c.storeUrl||"";$("chCheckout").value=c.checkoutUrl||"";
+  const st=$("chStatus");st.classList.toggle("on",linked);
+  st.textContent=linked?"Lié"+(c.linkedAt?" · "+new Date(c.linkedAt).toLocaleDateString("fr-FR"):""):"Non lié";
+  $("chLink").textContent=linked?"Mettre à jour":"Lier le compte";
+  $("chUnlink").hidden=!linked;$("chTest").hidden=!linked;if(linked)$("chTest").href=c.checkoutUrl;
+  const L=$("rvList");L.textContent="";
+  if(!S.cfg.reviews.length){const p=document.createElement("p");p.className="empty";p.textContent="Aucun avis pour l'instant.";L.appendChild(p)}
+  S.cfg.reviews.forEach((r,i)=>{const d=document.createElement("div");d.className="rv";
+    const h=document.createElement("header");const n=document.createElement("b");const st=Math.min(5,Math.max(1,r.stars|0||5));n.textContent=r.name+"  "+"★".repeat(st)+"☆".repeat(5-st);
+    const del=document.createElement("button");del.type="button";del.textContent="Supprimer";del.onclick=()=>{S.cfg.reviews.splice(i,1);setDirty(true);render()};
+    h.append(n,del);const p=document.createElement("p");p.textContent=r.text;const s=document.createElement("small");s.textContent=r.date||"";d.append(h,p,s);L.appendChild(d)});
+}
+
+$("loginForm").onsubmit=async e=>{e.preventDefault();clearMsg($("loginMsg"));const btn=e.submitter;btn.disabled=true;btn.textContent="Connexion…";
+  try{await login($("repo").value,$("token").value)}catch(err){msg($("loginMsg"),err.status===401?"Token invalide ou expiré.":err.status===404?"Dépôt introuvable ou inaccessible avec ce token.":err.message,false)}
+  finally{btn.disabled=false;btn.textContent="Se connecter"}};
+
+$("logout").onclick=()=>{if(S.dirty&&!confirm("Des modifications ne sont pas enregistrées. Se déconnecter quand même ?"))return;store("s","pv_token",null);location.reload()};
+
+$("chLink").onclick=()=>{clearMsg($("chMsg"));const store_=$("chStore").value.trim(),co=$("chCheckout").value.trim();
+  if(!isHttps(co))return msg($("chMsg"),"Le lien de paiement doit être une adresse https:// valide.",false);
+  if(store_&&!isHttps(store_))return msg($("chMsg"),"Le lien de la boutique doit être une adresse https:// valide.",false);
+  S.cfg.chariow={storeUrl:store_,checkoutUrl:co,linkedAt:new Date().toISOString()};setDirty(true);render();
+  msg($("chMsg"),"Compte Chariow lié. Cliquez sur « Enregistrer et publier » pour l'appliquer au site.",true)};
+
+$("chUnlink").onclick=()=>{if(!confirm("Délier le compte Chariow ? Les boutons d'achat ne mèneront plus au paiement."))return;
+  S.cfg.chariow=structuredClone(EMPTY.chariow);setDirty(true);render();msg($("chMsg"),"Compte délié. Pensez à enregistrer.",true)};
+
+$("rvForm").onsubmit=e=>{e.preventDefault();
+  S.cfg.reviews.push({name:$("rvName").value.trim(),date:$("rvDate").value.trim(),stars:+$("rvStars").value,text:$("rvText").value.trim()});
+  e.target.reset();setDirty(true);render()};
+
+$("save").onclick=async()=>{const btn=$("save");btn.disabled=true;btn.textContent="Publication…";clearMsg($("saveMsg"));
+  try{const body={message:"Admin : mise à jour de la configuration",content:b64enc(JSON.stringify(S.cfg,null,2)+"\n"),branch:S.branch};if(S.sha)body.sha=S.sha;
+    const r=await gh("/repos/"+S.repo+"/contents/config.json",{method:"PUT",body:JSON.stringify(body)});S.sha=r.content.sha;setDirty(false);
+    msg($("saveMsg"),"Enregistré. Le site public sera à jour d'ici une à deux minutes (temps de publication GitHub Pages).",true)}
+  catch(err){setDirty(true);msg($("saveMsg"),err.status===409?"Le fichier a été modifié ailleurs entre-temps. Rechargez la page puis recommencez.":"Échec de l'enregistrement : "+err.message,false)}
+  finally{btn.textContent="Enregistrer et publier"}};
+
+addEventListener("beforeunload",e=>{if(S.dirty){e.preventDefault();e.returnValue=""}});
+
+$("repo").value=store("l","pv_repo")||guessRepo();
+const saved=store("s","pv_token");
+if(saved&&$("repo").value){$("token").value=saved;login($("repo").value,saved).catch(()=>{store("s","pv_token",null);$("token").value=""})}
+</script>
+</body>
+</html>

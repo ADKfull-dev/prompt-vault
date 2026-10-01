@@ -234,11 +234,10 @@ nav{position:absolute;left:0;right:0;top:80px;background:var(--y);border-bottom:
 </div></footer>
 
 <script>
-// ===== À MODIFIER =====
+// Valeurs par défaut. Le lien Chariow et les avis se gèrent depuis admin.html (enregistrés dans config.json).
 const CONFIG={checkoutUrl:""}; // lien de votre produit sur Chariow
-const REVIEWS=[]; // ajoutez ici de VRAIS avis : {name:"Prénom N.",date:"Octobre 2026",stars:5,text:"..."}
-// ======================
-document.querySelectorAll(".js-buy").forEach(a=>{if(CONFIG.checkoutUrl){a.href=CONFIG.checkoutUrl;a.target="_blank";a.rel="noopener"}});
+const REVIEWS=[]; // {name:"Prénom N.",date:"Octobre 2026",stars:5,text:"..."}
+function applyBuy(url){if(!/^https:\/\//i.test(url||""))return;document.querySelectorAll(".js-buy").forEach(a=>{a.href=url;a.target="_blank";a.rel="noopener"})}
 const b=document.querySelector(".bur"),m=document.getElementById("menu");
 b.onclick=()=>{const o=m.classList.toggle("open");b.setAttribute("aria-expanded",o)};
 m.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>m.classList.remove("open")));
@@ -254,8 +253,11 @@ const t=document.createElement("div");const s=document.createElement("small");s.
 const bt=document.createElement("button");bt.className="btn";bt.textContent="Copier";
 bt.onclick=async()=>{try{await navigator.clipboard.writeText(p[2])}catch(e){const a=document.createElement("textarea");a.value=p[2];document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(_){}a.remove()}bt.textContent="Copié ✓";setTimeout(()=>bt.textContent="Copier",1800)};
 d.append(t,bt);ex.appendChild(d)});
-if(REVIEWS.length){document.getElementById("rev").classList.add("on");const g=document.getElementById("rg");
-REVIEWS.forEach(r=>{const c=document.createElement("div");c.className="rc";const n=document.createElement("b");n.textContent=r.name;const s=document.createElement("div");s.textContent="★".repeat(r.stars||5)+"☆".repeat(5-(r.stars||5));s.style.margin="6px 0";const x=document.createElement("p");x.textContent=r.text;const dt=document.createElement("small");dt.textContent=r.date||"";c.append(n,s,x,dt);g.appendChild(c)})}
+function renderReviews(list){const g=document.getElementById("rg");g.textContent="";document.getElementById("rev").classList.toggle("on",list.length>0);
+list.forEach(r=>{const st=Math.min(5,Math.max(1,r.stars|0||5));const c=document.createElement("div");c.className="rc";const n=document.createElement("b");n.textContent=r.name;const s=document.createElement("div");s.textContent="★".repeat(st)+"☆".repeat(5-st);s.style.margin="6px 0";const x=document.createElement("p");x.textContent=r.text;const dt=document.createElement("small");dt.textContent=r.date||"";c.append(n,s,x,dt);g.appendChild(c)})}
+applyBuy(CONFIG.checkoutUrl);renderReviews(REVIEWS);
+fetch("config.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(c=>{if(!c)return;
+if(c.chariow&&c.chariow.checkoutUrl)applyBuy(c.chariow.checkoutUrl);if(Array.isArray(c.reviews))renderReviews(c.reviews)}).catch(()=>{});
 </script>
 </body>
 </html>
